@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    environment {
+        APPIUM_SERVER = 'http://localhost:4723/wd/hub'
+        DEVICE_NAME = 'emulator-5554'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/Malleka2123/mobile-automation-tmobile.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                // Ensure Appium server is running on Jenkins agent before this step
+                sh 'mvn test'
+            }
+        }
+    }
+
+    post {
+        always {
+            junit '**/target/surefire-reports/*.xml'
+            archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
+        }
+    }
+}
